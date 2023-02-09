@@ -50,6 +50,7 @@ int main(int argc, char **argv)
     fileContent = setUpfileContent(fileName);
 
     // Parse
+    // TODO: Parse function
 
     // write prepcocesed content to file
     outFileName = writeFile(fileName, preprocesedContent);
