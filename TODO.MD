@@ -1,12 +1,15 @@
 # TO DO:
 ## DFA:
 - [ ] Alphabet (all characters)
-- [ ] Types 
-- [ ] Identifiers
-- [X] Keywords  
-- [ ] Constants (integers, floats, and strings)
-- [ ] Operators 
-- [ ] Delimiters
+- [X] Types: int, double, char, void
+- [ ] Operators: = > + *
+- [ ] Especial characters: ( ) { } [ ] ; ,
+- [X] Numbers: 0-9
+- [X] Keywords: if, else, while, main, return.
+- [ ] Non-essential characters: space, eol, tabs (and similar delimiter characters)
+- [ ] Identifiers/variables: a-z, A-Z, 0-9, _
+- [ ] Literal
+- [ ] Non-recognized
 
 # Handle input file
 - [ ] Open file
