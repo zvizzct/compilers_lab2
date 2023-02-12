@@ -13,6 +13,7 @@ The scanner is a tool that allows you to analyze your code and produce a list of
 - Identifiers/variables
 - Literal
 - Non-recognized
+
 The output of the scanner is saved in a file with the same name as the input file, but with the extension ".scn".
 
 ## Installation
