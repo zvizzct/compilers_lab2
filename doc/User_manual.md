@@ -34,11 +34,15 @@ Where `Token_Type` is the type of the token, and `Token_Value` is the value of t
 ## Tokens
 The scanner implementation recognizes the following tokens:
 
-- Identifiers
-- Keywords
-- Constants (integers, floats, and strings)
+- Types
 - Operators
-- Delimiters
+- Especial characters
+- Numbers
+- Keywords
+- Non-essential characters
+- Identifiers/variables
+- Literal
+- Non-recognized
 
 ## Error Handling
 The scanner implementation has error handling capabilities. In case of any error in the input program, an error message is printed to the standard error indicating the line number and the type of error. The scanner then continues processing the next line.
