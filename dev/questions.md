@@ -1,0 +1,7 @@
+- save content of file and then read it or just read it?
+- different dfa or just one big ndfa (hard to add new tokens??)
+- structure for tokens?
+- call function with each character of the file in the loop? keep a buffer or look ahead?
+- what if there is a keyword and then another char without a space? (e.g. if())
+- dont get this:  "We restrict also that any identifier cannot start with a substring that or any keyword, this means, that every character at the beginning will identify what keyword or identifier is (lookahead of 1)"
+- file structure best practices?
