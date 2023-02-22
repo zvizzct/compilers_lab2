@@ -3,6 +3,7 @@
         "comp-p1.h": "c",
         "string.h": "c",
         "stdio.h": "c",
-        "utilsfiles.h": "c"
+        "utilsfiles.h": "c",
+        "unistd.h": "c"
     }
 }
