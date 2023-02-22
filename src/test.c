@@ -1,2 +1,4 @@
-if test else "abcADda"
+if {
+    test else "abcADda"
+}
 return

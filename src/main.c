@@ -1,7 +1,9 @@
 #include "keyword.h"
 #include "literal.h"
+#include "especial_character.h"
 #include <unistd.h>
 #include <fcntl.h>
+
 
 int keywordIsDone(int state) {
     if (state == 17 || state == 18 || state == 19 || state == 20 || state == 21) {
@@ -12,6 +14,13 @@ int keywordIsDone(int state) {
 
 int literalIsDone(int state) {
     if (state == 2) {
+        return 1;
+    }
+    return 0;
+}
+
+int EspecialCharacterIsDone(int state) {
+    if (state == 1) {
         return 1;
     }
     return 0;
@@ -41,11 +50,13 @@ int main(int argc, char const *argv[]) {
     char buff;
     int current_state_keyword = 0;
     int current_state_literal = 0;
+    int current_state_especial_character = 0;
     char* token = malloc(sizeof(char));
     char current_word[80] = "";
     
     initKeyWordTransitionTable();
     initLiteralTransitionTable();
+    initEspecialCharacterTransitionTable();
 
     int i = 0;
     while (read(fd, &buff, 1) > 0)
@@ -59,9 +70,11 @@ int main(int argc, char const *argv[]) {
         }
         current_state_keyword = getKeyWordNextState(current_state_keyword, buff);
         current_state_literal = getLiteralNextState(current_state_literal, buff);
-        if (current_state_keyword == -1 && current_state_literal == -1) i = 0; // Skip unregonize for now
+        current_state_especial_character = getEspecialCharacterNextState(current_state_especial_character, buff);
+        if (current_state_keyword == -1 && current_state_literal == -1 && current_state_especial_character == -1) i = 0; // Skip unregonize for now
         if (current_state_keyword == -1) current_state_keyword = 0;
         if (current_state_literal == -1) current_state_literal = 0;
+        if (current_state_especial_character == -1) current_state_especial_character = 0;
         if(keywordIsDone(current_state_keyword)) {
             current_word[i] = '\0';
             buildToken(token, current_word, "CAT_KEYWORD");
@@ -78,6 +91,19 @@ int main(int argc, char const *argv[]) {
         else if(literalIsDone(current_state_literal)) {
             current_word[i] = '\0';
             buildToken(token, current_word, "CAT_LITERAL");
+            fprintf(output_file, "%s ", token);
+            printf("token = %s\n", token);
+
+            // Reinitialize variables
+            free(token);
+            current_state_keyword = 0;
+            current_state_literal = 0;
+            token = malloc(sizeof(char));
+            i = 0;
+        }
+        else if(EspecialCharacterIsDone(current_state_especial_character)) {
+            current_word[i] = '\0';
+            buildToken(token, current_word, "CAT_ESPECIAL_CHARACTER");
             fprintf(output_file, "%s ", token);
             printf("token = %s\n", token);
 
