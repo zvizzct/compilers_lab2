@@ -3,19 +3,19 @@
 #include <stdlib.h>
 
 #define MAX_LEN 100
-#define NO_OF_STATES 17
-#define NO_OF_SYMBOLS 13
+#define NO_OF_STATES_KEYWORD 17
+#define NO_OF_SYMBOLS_KEYWORD 13
 
-int keyword_transitions[NO_OF_STATES][NO_OF_SYMBOLS];
+int keyword_transitions[NO_OF_STATES_KEYWORD][NO_OF_SYMBOLS_KEYWORD];
 char keyword_letters[] = {'w','h','i','e','f','l','s','m','a','n','r','t','u'};
 
 // 0 represents " and 1 any character from alphabet
 // i =0, f = 1, e = 2,h=3,l = 4, s =5,m=6,a=7,n=8,r=9,t=10,u=11,w=12
 void initKeyWordTransitionTable()
 {
-    for (int i = 0; i < NO_OF_STATES; i++)
+    for (int i = 0; i < NO_OF_STATES_KEYWORD; i++)
     {
-        for (int j = 0; j < NO_OF_SYMBOLS; j++)
+        for (int j = 0; j < NO_OF_SYMBOLS_KEYWORD; j++)
         {
             if (i == 0)
             {

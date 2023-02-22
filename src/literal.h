@@ -3,17 +3,17 @@
 #include <stdlib.h>
 
 #define MAX_LEN 100
-#define NO_OF_STATES 4
-#define NO_OF_SYMBOLS 2
+#define NO_OF_STATES_LITERAL 4
+#define NO_OF_SYMBOLS_LITERAL 2
 
-int literal_transitions[NO_OF_STATES][NO_OF_SYMBOLS];
+int literal_transitions[NO_OF_STATES_LITERAL][NO_OF_SYMBOLS_LITERAL];
 char alphabet[] = {'a', 'b', 'c', 'd', 'A', 'B', 'C', 'D'};
 
 // 0 represents " and 1 any character from alphabet
 void initLiteralTransitionTable()
 {
     literal_transitions[0][0] = 1; // from state 0, with " it goes to state 1
-    literal_transitions[0][1] = 3; // from state 0, with any character of alphabet, it goes to state 3 (empty state)
+    literal_transitions[0][1] = -1; // from state 0, with any character of alphabet, it goes to state 3 (empty state)
     literal_transitions[1][0] = 2; // from state 1, with " it goes to state 2, the final state
     literal_transitions[1][1] = 1; // from state 1, with any character of alphabet, it stays to state 1
 }

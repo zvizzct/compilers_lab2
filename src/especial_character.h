@@ -3,10 +3,10 @@
 #include <stdlib.h>
 
 #define MAX_LEN 100
-#define NO_OF_STATES 17
-#define NO_OF_SYMBOLS 13
+#define NO_OF_STATES_ESPECIAL 1
+#define NO_OF_SYMBOLS_ESPECIAL 1
 
-int especial_character_transitions[NO_OF_STATES][NO_OF_SYMBOLS];
+int especial_character_transitions[NO_OF_STATES_ESPECIAL][NO_OF_SYMBOLS_ESPECIAL];
 char especial_characters[] = {'(',')','{','}','[',']',';',','};
 
 void initEspecialCharacterTransitionTable()
