@@ -8,10 +8,8 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/preprocesor",
+            "program": "${workspaceFolder}/src/main",
             "args": [
-                "-d",
-                "examples/ex_if.c",
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

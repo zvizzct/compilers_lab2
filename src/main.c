@@ -1,96 +1,89 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include "keyword.h"
+#include "literal.h"
+#include <unistd.h>
+#include <fcntl.h>
 
-#define MAX_LEN 100
-#define NO_OF_STATES 4
-#define NO_OF_SYMBOLS 2
-
-int transition[NO_OF_STATES][NO_OF_SYMBOLS];
-char alphabet[] = {'a', 'b', 'c', 'd', 'A', 'B', 'C', 'D'};
-
-// 0 represents " and 1 any character from alphabet
-void initTransitionTable()
-{
-    transition[0][0] = 1; // from state 0, with " it goes to state 1
-    transition[0][1] = 3; // from state 0, with any character of alphabet, it goes to state 3 (empty state)
-    transition[1][0] = 2; // from state 1, with " it goes to state 2, the final state
-    transition[1][1] = 1; // from state 1, with any character of alphabet, it stays to state 1
-}
-
-/**
- * Check whether an array al contain c
-*/
-int contains(char al[], char c) {
-    for (int i = 0; i < strlen(al); i++)
-    {
-        if (al[i] == c) return 1;
+int keywordIsDone(int state) {
+    if (state == 17 || state == 18 || state == 19 || state == 20 || state == 21) {
+        return 1; // 2 is the final state, it's done
     }
     return 0;
 }
 
-int getNextState(int currentState, char symbol)
-{
-    int symbolIndex;
-
-    if (contains(alphabet, symbol))
-    {
-        symbolIndex = 1; // 1 represents any character from alphabet
+int literalIsDone(int state) {
+    if (state == 2) {
+        return 1;
     }
-    else if (symbol == '"')
-    {
-        symbolIndex = 0; // 0 represents "
-    }
-    else
-    {
-        return -1;
-    }
-
-    return transition[currentState][symbolIndex];
-}
-
-int processString(char str[])
-{
-    int i, currentState, nextState;
-
-    currentState = 0;
-
-    for (i = 0; i < strlen(str); i++)
-    {
-        nextState = getNextState(currentState, str[i]);
-
-        if (nextState == -1)
-        {
-            return 0;
-        }
-        else if (nextState == 2) {
-            return 1; // 2 is the final state, it's done
-        }
-
-        currentState = nextState;
-    }
-
     return 0;
 }
 
-int main()
-{
-    char str[MAX_LEN];
-
-    initTransitionTable();
-
-    printf("Enter a string: ");
-    scanf("%s", str);
-
-    if (processString(str))
+void buildToken(char* token, char token_lexeme[], char category[]) {
+    int i,j;
+    token[0] = '<';
+    for (i = 0; token_lexeme[i] != '\0'; i++)
     {
-        printf("Accept\n");
+        token[i+1] = token_lexeme[i];
     }
-    else
+    i++;
+    token[i] = ',';
+    for (j = 1; category[j-1] != '\0'; j++)
     {
-        printf("Reject\n");
+        token[i+j] = category[j-1];
     }
+    token[i+j] = '>';
+    token[i+j+1] = '\0';
+}
+
+int main(int argc, char const *argv[]) {
+    char token_buffer[1000];
+    int fd = open("test.c",O_RDWR, 0644);
+    char buff;
+    int current_state_keyword = 0;
+    int current_state_literal = 0;
+    char* token = malloc(sizeof(char));
+    char current_word[80] = "";
     
+    initKeyWordTransitionTable();
+    initLiteralTransitionTable();
 
+    int i = 0;
+    while (read(fd, &buff, 1) > 0)
+    {
+        if (buff != ' ') {
+            current_word[i] = buff;
+            i++;
+        }
+        current_state_keyword = getKeyWordNextState(current_state_keyword, buff);
+        current_state_literal = getLiteralNextState(current_state_literal, buff);
+        if (current_state_keyword == -1 && current_state_literal == -1) i = 0; // Skip unregonize for now
+        if (current_state_keyword == -1) current_state_keyword = 0;
+        if (current_state_literal == -1) current_state_literal = 0;
+        if(keywordIsDone(current_state_keyword)) {
+            current_word[i] = '\0';
+            buildToken(token, current_word, "CAT_KEYWORD");
+            printf("token = %s\n", token);
+
+            // Reinitialize variables
+            free(token);
+            current_state_keyword = 0;
+            current_state_literal = 0;
+            token = malloc(sizeof(char));
+            i = 0;
+        }
+        else if(literalIsDone(current_state_literal)) {
+            current_word[i] = '\0';
+            buildToken(token, current_word, "CAT_LITERAL");
+            printf("token = %s\n", token);
+
+            // Reinitialize variables
+            free(token);
+            current_state_keyword = 0;
+            current_state_literal = 0;
+            token = malloc(sizeof(char));
+            i = 0;
+        }
+    }
+    free(token);
+    close(fd);
     return 0;
 }
