@@ -5,7 +5,7 @@
 
 int keywordIsDone(int state) {
     if (state == 17 || state == 18 || state == 19 || state == 20 || state == 21) {
-        return 1; // 2 is the final state, it's done
+        return 1;
     }
     return 0;
 }
@@ -37,6 +37,7 @@ void buildToken(char* token, char token_lexeme[], char category[]) {
 int main(int argc, char const *argv[]) {
     char token_buffer[1000];
     int fd = open("test.c",O_RDWR, 0644);
+    FILE *output_file = fopen("output.c", "w");
     char buff;
     int current_state_keyword = 0;
     int current_state_literal = 0;
@@ -49,7 +50,10 @@ int main(int argc, char const *argv[]) {
     int i = 0;
     while (read(fd, &buff, 1) > 0)
     {
-        if (buff != ' ') {
+        if (buff == '\n') {
+            fprintf(output_file, "\n");
+        }
+        else if (buff != ' ') {
             current_word[i] = buff;
             i++;
         }
@@ -61,6 +65,7 @@ int main(int argc, char const *argv[]) {
         if(keywordIsDone(current_state_keyword)) {
             current_word[i] = '\0';
             buildToken(token, current_word, "CAT_KEYWORD");
+            fprintf(output_file, "%s ", token);
             printf("token = %s\n", token);
 
             // Reinitialize variables
@@ -73,6 +78,7 @@ int main(int argc, char const *argv[]) {
         else if(literalIsDone(current_state_literal)) {
             current_word[i] = '\0';
             buildToken(token, current_word, "CAT_LITERAL");
+            fprintf(output_file, "%s ", token);
             printf("token = %s\n", token);
 
             // Reinitialize variables
@@ -85,5 +91,6 @@ int main(int argc, char const *argv[]) {
     }
     free(token);
     close(fd);
+    close(output_file);
     return 0;
 }
