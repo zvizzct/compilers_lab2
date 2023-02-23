@@ -1,6 +1,8 @@
 #include "keyword.h"
 #include "literal.h"
 #include "especial_character.h"
+#include "identifier.h"
+#include "types.h"
 #include <unistd.h>
 #include <fcntl.h>
 
@@ -22,8 +24,22 @@ int literalIsDone(int state) {
     return 0;
 }
 
-int EspecialCharacterIsDone(int state) {
+int especialCharacterIsDone(int state) {
     if (state == 1) {
+        return 1;
+    }
+    return 0;
+}
+
+int identifierIsDone(int state) {
+    if (state == 2) {
+        return 1;
+    }
+    return 0;
+}
+
+int typeIsDone(int state) {
+    if (state == 3 || state == 9 || state == 13 || state == 17) {
         return 1;
     }
     return 0;
@@ -56,23 +72,31 @@ void printDebugMode(FILE* output_file, int* count_is_printed, int count_line, ch
     printf("%s ", token);
 }
 
+void initTransitionTables() {
+    initKeyWordTransitionTable();
+    initLiteralTransitionTable();
+    initEspecialCharacterTransitionTable();
+    initIdentifierTransitionTable();
+    initTypeTransitionTable();
+}
+
 void process(FILE* input_file, FILE* output_file) {
     char buff;
     int current_state_keyword = 0;
     int current_state_literal = 0;
     int current_state_especial_character = 0;
+    int current_state_identifier = 0;
+    int current_state_type = 0;
     char* token = malloc(100 * sizeof(char));
     char current_word[80] = "";
     int reset = 0; // boolean
     char previous_buff = 'a';
 #if (OUTFORMAT == DEBUG)
     int count_line = 1;
-    int count_is_printed = 0;
+    int count_is_printed = 0; // boolean
 #endif
     
-    initKeyWordTransitionTable();
-    initLiteralTransitionTable();
-    initEspecialCharacterTransitionTable();
+    initTransitionTables();
 
     int i = 0;
     while (fread(&buff, 1, 1,input_file) > 0)
@@ -95,14 +119,18 @@ void process(FILE* input_file, FILE* output_file) {
             count_is_printed = 0;
         }
     #endif   
-        current_state_keyword = getKeyWordNextState(current_state_keyword, buff);
-        current_state_literal = getLiteralNextState(current_state_literal, buff);
-        current_state_especial_character = getEspecialCharacterNextState(current_state_especial_character, buff);
-        if (current_state_keyword == -1 && current_state_literal == -1 && current_state_especial_character == -1
-            && (buff == ' ' || buff == '\n')) {
+        if (current_state_keyword != -1) current_state_keyword = getKeyWordNextState(current_state_keyword, buff);
+        if (current_state_literal != -1) current_state_literal = getLiteralNextState(current_state_literal, buff);
+        if (current_state_especial_character != -1) current_state_especial_character = getEspecialCharacterNextState(current_state_especial_character, buff);
+        if (current_state_identifier != -1) current_state_identifier = getIdentifierNextState(current_state_identifier, buff);
+        if (current_state_type != -1) current_state_type = getTypeNextState(current_state_type, buff);
+        if (current_state_keyword == -1 && current_state_literal == -1 && current_state_especial_character == -1 
+            && current_state_identifier == -1 && (buff == ' ' || buff == '\n')) {
             current_state_keyword = 0;
             current_state_literal = 0;
             current_state_especial_character = 0;
+            current_state_identifier = 0;
+            current_state_type = 0;
             i = 0; // Skip unregonize for now
         }
 
@@ -125,9 +153,27 @@ void process(FILE* input_file, FILE* output_file) {
             fprintf(output_file, "%s ", token);
             reset = 1;
         }
-        else if(EspecialCharacterIsDone(current_state_especial_character)) {
+        else if(especialCharacterIsDone(current_state_especial_character)) {
             current_word[i] = '\0';
             buildToken(token, current_word, "CAT_ESPECIAL_CHARACTER");
+        #if (OUTFORMAT == DEBUG)
+            printDebugMode(output_file, &count_is_printed, count_line, token);
+        #endif
+            fprintf(output_file, "%s ", token);
+            reset = 1;
+        }
+        else if(identifierIsDone(current_state_identifier)) {
+            current_word[i] = '\0';
+            buildToken(token, current_word, "CAT_IDENTIFIER");
+        #if (OUTFORMAT == DEBUG)
+            printDebugMode(output_file, &count_is_printed, count_line, token);
+        #endif
+            fprintf(output_file, "%s ", token);
+            reset = 1;
+        }
+        else if(typeIsDone(current_state_type)) {
+            current_word[i] = '\0';
+            buildToken(token, current_word, "CAT_TYPE");
         #if (OUTFORMAT == DEBUG)
             printDebugMode(output_file, &count_is_printed, count_line, token);
         #endif
@@ -141,6 +187,8 @@ void process(FILE* input_file, FILE* output_file) {
             current_state_keyword = 0;
             current_state_literal = 0;
             current_state_especial_character = 0;
+            current_state_identifier = 0;
+            current_state_type = 0;
             token = malloc(100 * sizeof(char));
             i = 0;
             reset = 0;

@@ -1,10 +1,9 @@
-bcgif if {
+int bcgif if { void
 
 
-    test else "abcADda"
-
+    test else "abcADda99{}*ncJd"
+    double char
 
 }
-
 
 return

@@ -2,12 +2,13 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define MAX_LEN 100
 #define NO_OF_STATES_LITERAL 4
 #define NO_OF_SYMBOLS_LITERAL 2
 
 int literal_transitions[NO_OF_STATES_LITERAL][NO_OF_SYMBOLS_LITERAL];
-char alphabet[] = {'a', 'b', 'c', 'd', 'A', 'B', 'C', 'D'};
+char alphabet[] = {'a','b','c','d','f','g','h','j','k','l','n','o','p','q','s','t','u','v','x','y','z',
+                    'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
+                    '0','1','2','3','4','5','6','7','8','9','{','}', '[', ']',';',',','(',')','+','-','/','*','<','>'};
 
 // 0 represents " and 1 any character from alphabet
 void initLiteralTransitionTable()

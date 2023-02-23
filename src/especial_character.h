@@ -2,9 +2,9 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define MAX_LEN 100
 #define NO_OF_STATES_ESPECIAL 1
 #define NO_OF_SYMBOLS_ESPECIAL 1
+#define ALPHABET_SIZE 8
 
 int especial_character_transitions[NO_OF_STATES_ESPECIAL][NO_OF_SYMBOLS_ESPECIAL];
 char especial_characters[] = {'(',')','{','}','[',']',';',','};
@@ -17,8 +17,8 @@ void initEspecialCharacterTransitionTable()
 /**
  * Check whether an array al contain c
 */
-int contains2(char al[], char c) {
-    for (int i = 0; i < strlen(al); i++)
+int contains2(char al[], char c, int length_al) {
+    for (int i = 0; i < length_al; i++)
     {
         if (al[i] == c) return 1;
     }
@@ -29,7 +29,7 @@ int getEspecialCharacterNextState(int currentState, char symbol)
 {
     int symbolIndex;
 
-    if (contains(especial_characters, symbol))
+    if (contains2(especial_characters, symbol, ALPHABET_SIZE))
     {
         symbolIndex = 0;
     }
