@@ -1,29 +1,9 @@
 
 
-#include <stdio.h>
-#include <stdlib.h>
-#include "src/utilsFiles.h"
-
-FILE *file;
-char *fileContent;
-
-char *setUpfileContent(char *fileName)
-{
-
-    // Open file
-    file = openFile(fileName);
-
-    // Check if file was successfully opened
-    if (file == NULL)
-    {
-        return "error";
-    }
-
-    // Read file
-    fileContent = readFile(file);
-
-    return fileContent;
-}
+#include "scanner.h"
+#include "utilsFiles.h"
+#include <unistd.h>
+#include <fcntl.h>
 
 void outputMessage(char *outFileName)
 {
@@ -39,28 +19,29 @@ void flagHelp()
     // TODO: add help flag
 }
 
-int main(int argc, char **argv)
-{
-    // Variables
-    char *fileName, *outFileName;
-    char *flag1 = NULL, *flag2 = NULL, *flag3 = NULL;
-    char *preprocesedContent;
-    int fd;
+int main(int argc, char const *argv[]) {
 
-    fileContent = setUpfileContent(fileName);
+    // Setup file names
+    char* input_file_name = malloc(30 * sizeof(char));
+    sprintf(input_file_name, "%s", argv[1]);
+    char* output_file_name = malloc(30 * sizeof(char));
+    getOutputFileName(input_file_name, output_file_name);
 
-    // Parse
-    // TODO: Parse function
+    // Open files
+    FILE *input_file = openFile(input_file_name, "r");
+    if (input_file == NULL) return 1;
+    FILE *output_file = openFile(output_file_name, "w");
 
-    // write prepcocesed content to file
-    outFileName = writeFile(fileName, preprocesedContent);
+    // process function
+    process(input_file, output_file);
 
-    // Print output message
-    outputMessage(outFileName);
+    outputMessage(output_file_name);
 
-    // Free memory and close file
-    free(fileContent);
-
-    // Close file
-    fclose(file);
+    // Free dynamic memory and close files
+    free(input_file_name);
+    free(output_file_name);
+    fclose(input_file);
+    fclose(output_file);
+    
+    return 0;
 }

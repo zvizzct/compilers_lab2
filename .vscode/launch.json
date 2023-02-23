@@ -8,8 +8,9 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/src/main",
+            "program": "${workspaceFolder}/src/scanner",
             "args": [
+                "tes.c"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
