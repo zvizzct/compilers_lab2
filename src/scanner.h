@@ -17,55 +17,12 @@
 #define DEBUG 1
 #define OUTFORMAT DEBUG
 
-int keywordIsDone(int state) {
-    if (state == 22) {
-        return 1;
-    }
-    return 0;
-}
-
-int literalIsDone(int state) {
-    if (state == 2) {
-        return 1;
-    }
-    return 0;
-}
-
-int especialCharacterIsDone(int state) {
-    if (state == 1) {
-        return 1;
-    }
-    return 0;
-}
-
-int identifierIsDone(int state) {
-    if (state == 2) {
-        return 1;
-    }
-    return 0;
-}
-
-int typeIsDone(int state) {
-    if (state == 3 || state == 9 || state == 13 || state == 17) {
-        return 1;
-    }
-    return 0;
-}
-
-int operatorIsDone(int state) {
-    if (state == 1) {
-        return 1;
-    }
-    return 0;
-}
-
-int numberIsDone(int state) {
-    if (state == 2) {
-        return 1;
-    }
-    return 0;
-}
-
+/**
+ * Build the token in this form : <token_lexem,category>
+ * @param token an array of char where is stored the token's content
+ * @param token_lexeme : an array of char containing the lexeme token
+ * @param category: an array of char containing the category token
+*/
 void buildToken(char* token, char token_lexeme[], char category[]) {
     int i,j;
     token[0] = '<';
@@ -84,6 +41,15 @@ void buildToken(char* token, char token_lexeme[], char category[]) {
     token[i+j+1] = '\0';
 }
 
+/**
+ * print the number of the line we are processing at the begging of the line in the output file,
+ * print the sequence of tokens in stdout and set the boolean count_is_printed to true
+ * if the debug mode is activated
+ * @param output_file the file to be fill
+ * @param count_is_printed boolean that indicates whether the number of the line is already print in the output file
+ * @param count_line the number of the line
+ * @param token an array of char where is stored the token's content
+*/
 void printDebugMode(FILE* output_file, int* count_is_printed, int count_line, char* token) {
     if (!*count_is_printed) {
         fprintf(output_file, "%d ", count_line);
@@ -93,6 +59,9 @@ void printDebugMode(FILE* output_file, int* count_is_printed, int count_line, ch
     printf("%s ", token);
 }
 
+/**
+ * initialize the transition tables for all dfas
+*/
 void initTransitionTables() {
     initKeyWordTransitionTable();
     initLiteralTransitionTable();
@@ -103,32 +72,32 @@ void initTransitionTables() {
     initNumberTransitionTable();
 }
 /**
- * reset all variables to their initial state
+ * reset all the variables to their initial state
+ * @param token : char array where is stored the token's content
+ * @param first_dfas : an array containing the first dfas and their current states
+ * @param second_dfas : an array containing the second dfas and their current states
+ * @param index_current_word : the current index of the stored word during the process
+ * @param empty_line : a boolean that indicates whether the line we are processing is an empty line
+ * @param first_dfa_check: a boolean that indicates with which value the first dfas need to be set 
 */
-void reset(char* token, int* state_keyword, int* state_literal, int* state_especial_character,
-            int* state_identifier, int* state_type, int* state_operator, int* state_number,
-            int* index_current_word, int* empty_line, int first_dfa_check) {
+void reset(char* token, int first_dfas[][1], int second_dfas[][1], int* index_current_word, int* empty_line, int first_dfa_check) {
     if (first_dfa_check) {
-        *state_keyword = -1;
-        *state_identifier = -1;
-        *state_number = -1;
+        for (int i = 0; i < 3; i++) first_dfas[i][0] = -1;
     }
     else {
-        *state_keyword = 0;
-        *state_identifier = 0;
-        state_number = 0;
+        for (int i = 0; i < 3; i++) first_dfas[i][0] = 0;
     }
-    *state_literal = 0;
-    *state_especial_character = 0;
-    *state_type = 0;
-    *state_operator = 0;
+    for (int i = 0; i < 3; i++) second_dfas[i][0] = 0;
     free(token);
     token = malloc(100 * sizeof(char));
     *index_current_word = 0;
     *empty_line = 0;
 }
 /**
- *@return the dfa's index if a dfa is done, else -1
+ * @param dfas : an array containing the first dfas or the second dfas and their current states
+ * @param first_dfa_check: a boolean that indicates whether dfas
+ * is the first dfas array or the second dfas array
+ * @return the dfa's index from dfas if a dfa is done, else -1
 */
 int dfasDone(int dfas[][1], int first_dfa_check) {
     if (first_dfa_check) {
@@ -151,7 +120,12 @@ int dfasDone(int dfas[][1], int first_dfa_check) {
         return -1;
     }
 }
-
+/**
+ * @param dfa_index : the index of the ended dfa
+ * @param first_dfa_check: a boolean that indicates whether dfa_index
+ * is an index from the first dfas array or second dfas array
+ * @return the category token corresponding to the ended dfa
+*/
 char* getCategory(int dfa_index, int first_dfa_check) {
     if (first_dfa_check) {
         if (dfa_index == 0) return "CAT_NUMBER";
@@ -166,6 +140,12 @@ char* getCategory(int dfa_index, int first_dfa_check) {
     }
 }
 
+/**
+ * Read through the input file and fill the output fill with a sequence of tokens
+ * corresponding with the words found in the input file
+ * @param input_file : the file to be read
+ * @param output_file : the file to be fill
+*/
 void process(FILE* input_file, FILE* output_file) {
     // Initialize variables
     char buff;
@@ -176,9 +156,9 @@ void process(FILE* input_file, FILE* output_file) {
     char previous_buff = 'a';
 #if (OUTFORMAT == DEBUG)
     int count_line = 1;
-    int count_is_printed = 0; // boolean
+    int count_is_printed = 0; // boolean : check if the number of the line is already printed
 #endif
-    int empty_line = 1; // boolean
+    int empty_line = 1; // boolean : check if a token was found in the line we are processing
     int dfa_done_index = -1;
     
     initTransitionTables();
@@ -201,9 +181,7 @@ void process(FILE* input_file, FILE* output_file) {
             printDebugMode(output_file, &count_is_printed, count_line, token);
         #endif
             fprintf(output_file, "%s ", token);
-            reset(token, &first_dfas[0][0], &second_dfas[0][0], &second_dfas[1][0],
-                &first_dfas[1][0], &second_dfas[2][0], &second_dfas[3][0], &first_dfas[2][0],
-                &i, &empty_line, 1);
+            reset(token, first_dfas, second_dfas, &i, &empty_line, 1);
         }
         
         // If all the dfas failed and the current character is ';', reset the current word and 
@@ -259,9 +237,7 @@ void process(FILE* input_file, FILE* output_file) {
             printDebugMode(output_file, &count_is_printed, count_line, token);
         #endif
             fprintf(output_file, "%s ", token);
-            reset(token, &first_dfas[0][0], &second_dfas[0][0], &second_dfas[1][0],
-                &first_dfas[1][0], &second_dfas[2][0], &second_dfas[3][0], &first_dfas[2][0],
-                &i, &empty_line, 0);
+            reset(token, first_dfas, second_dfas, &i, &empty_line, 0);
         }
 
         // Keep a track of the previous character to avoid printing too much '\n' in the output file if the
@@ -278,7 +254,7 @@ void process(FILE* input_file, FILE* output_file) {
     #endif
     }
 
-    // For the last word of the file
+    // For the last word of the file, check if the first dfas can end
     buff = '\n';
     if (first_dfas[0][0] != -1) first_dfas[0][0] = getNumberNextState(first_dfas[0][0], buff);
     if (first_dfas[1][0] != -1) first_dfas[1][0] = getIdentifierNextState(first_dfas[1][0], buff);
@@ -292,8 +268,6 @@ void process(FILE* input_file, FILE* output_file) {
         printDebugMode(output_file, &count_is_printed, count_line, token);
     #endif
         fprintf(output_file, "%s ", token);
-        reset(token, &first_dfas[0][0], &second_dfas[0][0], &second_dfas[1][0],
-            &first_dfas[1][0], &second_dfas[2][0], &second_dfas[3][0], &first_dfas[2][0],
-            &i, &empty_line, 1);
+        reset(token, first_dfas, second_dfas, &i, &empty_line, 1);
     }
 }

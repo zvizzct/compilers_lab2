@@ -39,3 +39,14 @@ int getOperatorNextState(int currentState, char symbol)
 
     return operator_transitions[currentState][symbolIndex];
 }
+
+/**
+ * Check if the dfa is done, it means if the dfa is in the state 1
+ * @param state the current state of the dfa
+*/
+int operatorIsDone(int state) {
+    if (state == 1) {
+        return 1;
+    }
+    return 0;
+}

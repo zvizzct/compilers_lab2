@@ -46,3 +46,14 @@ int getNumberNextState(int currentState, char symbol)
 
     return number_transitions[currentState][symbolIndex];
 }
+
+/**
+ * Check if the dfa is done, it means if the dfa is in the state 2
+ * @param state the current state of the dfa
+*/
+int numberIsDone(int state) {
+    if (state == 2) {
+        return 1;
+    }
+    return 0;
+}

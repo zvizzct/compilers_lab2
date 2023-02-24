@@ -33,6 +33,11 @@ FILE *openFile(char *fileName, char* openMode)
     return fptr;
 }
 
+/**
+ * Build the name of the output file from the name of the input file by adding scn at the end
+ * @param input_file_name an array of character containing the name of the input file
+ * @param output_file_name an array of character where the name of the output file has to be write
+*/
 void getOutputFileName(char input_file_name[], char* output_file_name) {
     int i;
     for (i = 0; input_file_name[i] != '\0'; i++)

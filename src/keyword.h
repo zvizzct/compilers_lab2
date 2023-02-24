@@ -166,3 +166,14 @@ int getKeyWordNextState(int currentState, char symbol)
 
     return keyword_transitions[currentState][symbolIndex];
 }
+
+/**
+ * Check if the dfa is done, it means if the dfa is in the state 22
+ * @param state the current state of the dfa
+*/
+int keywordIsDone(int state) {
+    if (state == 22) {
+        return 1;
+    }
+    return 0;
+}

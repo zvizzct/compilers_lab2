@@ -158,3 +158,14 @@ int getTypeNextState(int currentState, char symbol)
 
     return type_transitions[currentState][symbolIndex];
 }
+
+/**
+ * Check if the dfa is done, it means if the dfa is in the state 3, 9, 13 or 17
+ * @param state the current state of the dfa
+*/
+int typeIsDone(int state) {
+    if (state == 3 || state == 9 || state == 13 || state == 17) {
+        return 1;
+    }
+    return 0;
+}
