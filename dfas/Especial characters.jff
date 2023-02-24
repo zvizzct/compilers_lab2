@@ -8,8 +8,8 @@
 			<initial/>&#13;
 		</state>&#13;
 		<state id="1" name="q1">&#13;
-			<x>645.0</x>&#13;
-			<y>211.0</y>&#13;
+			<x>348.0</x>&#13;
+			<y>224.0</y>&#13;
 			<final/>&#13;
 		</state>&#13;
 		<!--The list of transitions.-->&#13;
