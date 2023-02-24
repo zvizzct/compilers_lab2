@@ -3,8 +3,8 @@
 #include <stdlib.h>
 
 #define MAX_LEN 100
-#define NO_OF_STATES_KEYWORD 17
-#define NO_OF_SYMBOLS_KEYWORD 13
+#define NO_OF_STATES_KEYWORD 21
+#define NO_OF_SYMBOLS_KEYWORD 14
 
 int keyword_transitions[NO_OF_STATES_KEYWORD][NO_OF_SYMBOLS_KEYWORD];
 char keyword_letters[] = {'w','h','i','e','f','l','s','m','a','n','r','t','u'};
@@ -90,6 +90,10 @@ void initKeyWordTransitionTable()
             {
                 if (keyword_letters[j] == 'e') keyword_transitions[i][j] = 21;
                 else keyword_transitions[i][j] = -1;
+            }if (i == 17 || i == 18 || i == 19 || i == 20 || i == 21)
+            {
+                if (j == 13) keyword_transitions[i][j] = 22;
+                else keyword_transitions[i][j] = -1;
             }
         }
     }
@@ -150,6 +154,10 @@ int getKeyWordNextState(int currentState, char symbol)
     else if (symbol == 'u')
     {
         symbolIndex = 12; // 0 represents "
+    }
+    else if (symbol == ' ' || symbol == '\n' || symbol == ';')
+    {
+        symbolIndex = 13; // 0 represents "
     }
     else
     {

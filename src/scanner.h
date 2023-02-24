@@ -3,6 +3,8 @@
 #include "especial_character.h"
 #include "identifier.h"
 #include "types.h"
+#include "operator.h"
+#include "number.h"
 #include <unistd.h>
 #include <fcntl.h>
 
@@ -11,7 +13,7 @@
 #define OUTFORMAT DEBUG
 
 int keywordIsDone(int state) {
-    if (state == 17 || state == 18 || state == 19 || state == 20 || state == 21) {
+    if (state == 22) {
         return 1;
     }
     return 0;
@@ -40,6 +42,20 @@ int identifierIsDone(int state) {
 
 int typeIsDone(int state) {
     if (state == 3 || state == 9 || state == 13 || state == 17) {
+        return 1;
+    }
+    return 0;
+}
+
+int operatorIsDone(int state) {
+    if (state == 1) {
+        return 1;
+    }
+    return 0;
+}
+
+int numberIsDone(int state) {
+    if (state == 2) {
         return 1;
     }
     return 0;
@@ -78,6 +94,8 @@ void initTransitionTables() {
     initEspecialCharacterTransitionTable();
     initIdentifierTransitionTable();
     initTypeTransitionTable();
+    initOperatorTransitionTable();
+    initNumberTransitionTable();
 }
 
 void process(FILE* input_file, FILE* output_file) {
@@ -87,6 +105,8 @@ void process(FILE* input_file, FILE* output_file) {
     int current_state_especial_character = 0;
     int current_state_identifier = 0;
     int current_state_type = 0;
+    int current_state_operator = 0;
+    int current_state_number = 0;
     char* token = malloc(100 * sizeof(char));
     char current_word[80] = "";
     int reset = 0; // boolean
@@ -95,56 +115,117 @@ void process(FILE* input_file, FILE* output_file) {
     int count_line = 1;
     int count_is_printed = 0; // boolean
 #endif
+    int empty_line = 1; // boolean
     
     initTransitionTables();
 
     int i = 0;
     while (fread(&buff, 1, 1,input_file) > 0)
     {
-        if (buff == '\n' && previous_buff != '\n') {
-            fprintf(output_file, "\n");
-        #if (OUTFORMAT == DEBUG)
-            fprintf(output_file, "\n");
-            printf("\n");
-            printf("\n");
-        #endif
-        }
-        else if (buff != ' ') {
-            current_word[i] = buff;
-            i++;
-        }
-    #if (OUTFORMAT == DEBUG)
-        if (buff == '\n') {
-            count_line++;
-            count_is_printed = 0;
-        }
-    #endif   
-        if (current_state_keyword != -1) current_state_keyword = getKeyWordNextState(current_state_keyword, buff);
-        if (current_state_literal != -1) current_state_literal = getLiteralNextState(current_state_literal, buff);
-        if (current_state_especial_character != -1) current_state_especial_character = getEspecialCharacterNextState(current_state_especial_character, buff);
+        
+        if (current_state_number != -1) current_state_number = getNumberNextState(current_state_number, buff);
         if (current_state_identifier != -1) current_state_identifier = getIdentifierNextState(current_state_identifier, buff);
-        if (current_state_type != -1) current_state_type = getTypeNextState(current_state_type, buff);
-        if (current_state_keyword == -1 && current_state_literal == -1 && current_state_especial_character == -1 
-            && current_state_identifier == -1 && (buff == ' ' || buff == '\n')) {
-            current_state_keyword = 0;
+        if (current_state_keyword != -1) current_state_keyword = getKeyWordNextState(current_state_keyword, buff);
+        if(numberIsDone(current_state_number)) {
+            current_word[i] = '\0';
+            buildToken(token, current_word, "CAT_NUMBER");
+        #if (OUTFORMAT == DEBUG)
+            printDebugMode(output_file, &count_is_printed, count_line, token);
+        #endif
+            fprintf(output_file, "%s ", token);
+            //reset
+            free(token);
+            current_state_keyword = -1;
             current_state_literal = 0;
             current_state_especial_character = 0;
-            current_state_identifier = 0;
+            current_state_identifier = -1;
             current_state_type = 0;
-            i = 0; // Skip unregonize for now
+            current_state_operator = 0;
+            current_state_number = -1;
+            token = malloc(100 * sizeof(char));
+            i = 0;
+            reset = 0;
+            empty_line = 0;
         }
-
-        // Check if one dfa is done, if yes build the corresponding token and write it in the file
-        if(keywordIsDone(current_state_keyword)) {
+        else if(identifierIsDone(current_state_identifier)) {
+            current_word[i] = '\0';
+            buildToken(token, current_word, "CAT_IDENTIFIER");
+        #if (OUTFORMAT == DEBUG)
+            printDebugMode(output_file, &count_is_printed, count_line, token);
+        #endif
+            fprintf(output_file, "%s ", token);
+            //reset
+            free(token);
+            current_state_keyword = -1;
+            current_state_literal = 0;
+            current_state_especial_character = 0;
+            current_state_identifier = -1;
+            current_state_type = 0;
+            current_state_operator = 0;
+            current_state_number = -1;
+            token = malloc(100 * sizeof(char));
+            i = 0;
+            reset = 0;
+            empty_line = 0;
+        }
+        else if(keywordIsDone(current_state_keyword)) {
             current_word[i] = '\0';
             buildToken(token, current_word, "CAT_KEYWORD");
         #if (OUTFORMAT == DEBUG)
             printDebugMode(output_file, &count_is_printed, count_line, token);
         #endif
             fprintf(output_file, "%s ", token);
-            reset = 1;
+            //reset
+            free(token);
+            current_state_keyword = -1;
+            current_state_literal = 0;
+            current_state_especial_character = 0;
+            current_state_identifier = -1;
+            current_state_type = 0;
+            current_state_operator = 0;
+            current_state_number = -1;
+            token = malloc(100 * sizeof(char));
+            i = 0;
+            reset = 0;
+            empty_line = 0;
         }
-        else if(literalIsDone(current_state_literal)) {
+        if (buff == ';' || current_state_keyword == -1 && current_state_literal == -1 && current_state_especial_character == -1 
+            && current_state_identifier == -1 && current_state_type == -1 && current_state_operator == -1
+            && current_state_number == -1) {
+            i = 0;
+            current_state_especial_character = 0;
+        }
+        current_word[i] = buff;
+        i++;
+        
+        if (current_state_literal != -1) current_state_literal = getLiteralNextState(current_state_literal, buff);
+        if (current_state_especial_character != -1) current_state_especial_character = getEspecialCharacterNextState(current_state_especial_character, buff);
+        if (current_state_type != -1) current_state_type = getTypeNextState(current_state_type, buff);
+        if (current_state_operator != -1) current_state_operator = getOperatorNextState(current_state_operator, buff);
+        if (current_state_keyword == -1 && current_state_literal == -1 && current_state_especial_character == -1 
+            && current_state_identifier == -1 && current_state_type == -1 && current_state_operator == -1
+            && current_state_number == -1 && (buff == ' ' || buff == '\n')) {
+            current_state_keyword = 0;
+            current_state_literal = 0;
+            current_state_especial_character = 0;
+            current_state_identifier = 0;
+            current_state_type = 0;
+            current_state_operator = 0;
+            current_state_number = 0;
+            if (buff == '\n' && previous_buff != '\n' && !empty_line) {
+                fprintf(output_file,"\n");
+            #if (OUTFORMAT == DEBUG)
+                fprintf(output_file,"\n");
+                printf("\n");
+                printf("\n");
+            #endif
+                empty_line = 1;
+            }
+            i = 0; // Skip unregonize for now
+        }
+
+        // Check if one dfa is done, if yes build the corresponding token and write it in the file
+        if(literalIsDone(current_state_literal)) {
             current_word[i] = '\0';
             buildToken(token, current_word, "CAT_LITERAL");
         #if (OUTFORMAT == DEBUG)
@@ -152,6 +233,7 @@ void process(FILE* input_file, FILE* output_file) {
         #endif
             fprintf(output_file, "%s ", token);
             reset = 1;
+            empty_line = 0;
         }
         else if(especialCharacterIsDone(current_state_especial_character)) {
             current_word[i] = '\0';
@@ -161,15 +243,7 @@ void process(FILE* input_file, FILE* output_file) {
         #endif
             fprintf(output_file, "%s ", token);
             reset = 1;
-        }
-        else if(identifierIsDone(current_state_identifier)) {
-            current_word[i] = '\0';
-            buildToken(token, current_word, "CAT_IDENTIFIER");
-        #if (OUTFORMAT == DEBUG)
-            printDebugMode(output_file, &count_is_printed, count_line, token);
-        #endif
-            fprintf(output_file, "%s ", token);
-            reset = 1;
+            empty_line = 0;
         }
         else if(typeIsDone(current_state_type)) {
             current_word[i] = '\0';
@@ -179,6 +253,17 @@ void process(FILE* input_file, FILE* output_file) {
         #endif
             fprintf(output_file, "%s ", token);
             reset = 1;
+            empty_line = 0;
+        }
+        else if(operatorIsDone(current_state_operator)) {
+            current_word[i] = '\0';
+            buildToken(token, current_word, "CAT_OPERATOR");
+        #if (OUTFORMAT == DEBUG)
+            printDebugMode(output_file, &count_is_printed, count_line, token);
+        #endif
+            fprintf(output_file, "%s ", token);
+            reset = 1;
+            empty_line = 0;
         }
 
         // if a dfa is done, we reset all variables we need to process the next word/token
@@ -189,11 +274,88 @@ void process(FILE* input_file, FILE* output_file) {
             current_state_especial_character = 0;
             current_state_identifier = 0;
             current_state_type = 0;
+            current_state_operator = 0;
+            current_state_number = 0;
             token = malloc(100 * sizeof(char));
             i = 0;
             reset = 0;
         }
         previous_buff = buff;
+    #if (OUTFORMAT == DEBUG)
+        if (buff == '\n') {
+            count_line++;
+            count_is_printed = 0;
+        }
+    #endif
+    }
+    // For the last word of the file
+    buff = '\n';
+    if (current_state_keyword != -1) current_state_keyword = getKeyWordNextState(current_state_keyword, buff);
+    if (current_state_identifier != -1) current_state_identifier = getIdentifierNextState(current_state_identifier, buff);
+    if (current_state_number != -1) current_state_number = getNumberNextState(current_state_number, buff);
+    // Check if one dfa is done, if yes build the corresponding token and write it in the file
+    if(numberIsDone(current_state_number)) {
+        current_word[i] = '\0';
+        buildToken(token, current_word, "CAT_NUMBER");
+    #if (OUTFORMAT == DEBUG)
+        printDebugMode(output_file, &count_is_printed, count_line, token);
+    #endif
+        fprintf(output_file, "%s ", token);
+        //reset
+        free(token);
+        current_state_keyword = 0;
+        current_state_literal = 0;
+        current_state_especial_character = 0;
+        current_state_identifier = 0;
+        current_state_type = 0;
+        current_state_operator = 0;
+        current_state_number = 0;
+        token = malloc(100 * sizeof(char));
+        i = 0;
+        reset = 0;
+        empty_line = 0;
+    }
+    else if(identifierIsDone(current_state_identifier)) {
+        current_word[i] = '\0';
+        buildToken(token, current_word, "CAT_IDENTIFIER");
+    #if (OUTFORMAT == DEBUG)
+        printDebugMode(output_file, &count_is_printed, count_line, token);
+    #endif
+        fprintf(output_file, "%s ", token);
+        //reset
+        free(token);
+        current_state_keyword = 0;
+        current_state_literal = 0;
+        current_state_especial_character = 0;
+        current_state_identifier = 0;
+        current_state_type = 0;
+        current_state_operator = 0;
+        current_state_number = 0;
+        token = malloc(100 * sizeof(char));
+        i = 0;
+        reset = 0;
+        empty_line = 0;
+    }
+    else if(keywordIsDone(current_state_keyword)) {
+        current_word[i] = '\0';
+        buildToken(token, current_word, "CAT_KEYWORD");
+    #if (OUTFORMAT == DEBUG)
+        printDebugMode(output_file, &count_is_printed, count_line, token);
+    #endif
+        fprintf(output_file, "%s ", token);
+        //reset
+        free(token);
+        current_state_keyword = 0;
+        current_state_literal = 0;
+        current_state_especial_character = 0;
+        current_state_identifier = 0;
+        current_state_type = 0;
+        current_state_operator = 0;
+        current_state_number = 0;
+        token = malloc(100 * sizeof(char));
+        i = 0;
+        reset = 0;
+        empty_line = 0;
     }
     free(token);
 }
