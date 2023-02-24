@@ -13,8 +13,10 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#define OFF 0
+#define ON 1
+#define DEBUG ON
 #define RELEASE 0
-#define DEBUG 1
 #define OUTFORMAT DEBUG
 
 /**
