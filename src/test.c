@@ -7,4 +7,4 @@ int bcgif8 =  7 if { void *
     
 }
 
-*
+return
