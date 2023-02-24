@@ -1,8 +1,8 @@
 # Executable file name
-EXE = preprocesor
+EXE = scanner
 
 # Source file name
-SRC = preprocesor.c
+SRC = scanner.c
 
 # Header file name
 INC = src/utilsFiles.h
